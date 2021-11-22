@@ -1,0 +1,1 @@
+# openfeign-strengthen-plugin
