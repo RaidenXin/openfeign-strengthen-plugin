@@ -1,6 +1,6 @@
 package com.raiden.feign.ribbon;
 
-import com.huihuang.feign.properties.ReinforceOptions;
+import com.raiden.feign.properties.ReinforceOptions;
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import feign.Request;
