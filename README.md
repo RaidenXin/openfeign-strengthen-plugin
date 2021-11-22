@@ -52,6 +52,13 @@
 
 
 
+#### 服务消费者引入 maven 依赖：
+            <dependency>
+                 <groupId>org.example</groupId>
+                 <artifactId>openfeign-strengthen-plugin-start</artifactId>
+                 <version>1.0-SNAPSHOT</version>
+            </dependency>
+
 
 #### 服务消费者方使用 application.yml 配置的形式使用,并且服务消费者超时时间配置优先级高于服务提供方配置
  
