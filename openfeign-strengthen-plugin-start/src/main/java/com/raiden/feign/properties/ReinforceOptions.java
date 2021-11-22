@@ -113,20 +113,30 @@ public class ReinforceOptions {
             return maxAutoRetries;
         }
 
-        public void setMaxAutoRetries(int maxAutoRetries) {
+        public Options setMaxAutoRetries(int maxAutoRetries) {
             this.maxAutoRetries = maxAutoRetries;
+            return this;
         }
 
         public boolean isAllowedRetry() {
             return isAllowedRetry;
         }
 
-        public void setAllowedRetry(boolean allowedRetry) {
+        public Options setAllowedRetry(boolean allowedRetry) {
             isAllowedRetry = allowedRetry;
+            return this;
         }
+    }
+
+    public Options options(boolean isAllowedRetry){
+        return new Options(this).setAllowedRetry(isAllowedRetry);
     }
 
     public Options options(){
         return new Options(this);
+    }
+
+    public static Options options(RpcInfo info){
+        return new Options(info);
     }
 }

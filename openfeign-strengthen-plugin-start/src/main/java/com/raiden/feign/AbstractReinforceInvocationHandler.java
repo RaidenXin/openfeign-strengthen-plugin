@@ -29,39 +29,23 @@ public abstract class AbstractReinforceInvocationHandler {
         dispatch.entrySet().stream().forEach(e -> {
             Method method = e.getKey();
             InvocationHandlerFactory.MethodHandler methodHandler = e.getValue();
-            ReinforceOptions reinforceOptions = getReinforceOptions(rpcConfig, method, defaultOptions);
-            ReinforceOptions.Options options = null;
-            if (reinforceOptions == null){
-                RpcInfo annotation = method.getAnnotation(RpcInfo.class);
-                //如果从方法上没找到
-                if (annotation == null){
-                    //从父类头上获取
-                    annotation = method.getDeclaringClass().getAnnotation(RpcInfo.class);
-                }
-                if (annotation != null){
-                    options = new ReinforceOptions.Options(annotation);
-                }
-            }else {
-                //是否重试
-                boolean retry = reinforceOptions.isRetry();
-                options = reinforceOptions.options();
-                //如果客户端配置的需要重试 就要去检查服务提供方是否允许重试
-                if (retry){
-                    RpcInfo annotation = method.getAnnotation(RpcInfo.class);
-                    //如果从方法上没找到
-                    if (annotation == null){
-                        //从父类头上获取
-                        annotation = method.getDeclaringClass().getAnnotation(RpcInfo.class);
-                    }
-                    //如果服务提供方没有提供注解 默认不允许重试
-                    boolean allowedRetry = annotation == null ? false : annotation.isAllowedRetry();
-                    options.setAllowedRetry(allowedRetry);
-                }
-            }
+            ReinforceOptions.Options options = getOptions(rpcConfig, method, defaultOptions);
             if (options != null){
                 FieldUtils.setFieldValue(methodHandler, "options", options);
             }
         });
+    }
+
+
+    private boolean isAllowedRetry(Method method){
+        RpcInfo annotation = method.getAnnotation(RpcInfo.class);
+        //如果从方法上没找到
+        if (annotation == null){
+            //从父类头上获取
+            annotation = method.getDeclaringClass().getAnnotation(RpcInfo.class);
+        }
+        //如果服务提供方没有提供注解 默认不允许重试
+        return annotation == null ? false : annotation.isAllowedRetry();
     }
 
     /**
@@ -71,7 +55,7 @@ public abstract class AbstractReinforceInvocationHandler {
      * @param defaultOptions
      * @return
      */
-    private ReinforceOptions getReinforceOptions(Map<String, ReinforceOptions> rpcConfig,Method method,ReinforceOptions defaultOptions){
+    private ReinforceOptions.Options getOptions(Map<String, ReinforceOptions> rpcConfig,Method method,ReinforceOptions defaultOptions){
         /*
          *这里是开始拼接配置的 Key
          * 服务消费者方配置：
@@ -115,13 +99,18 @@ public abstract class AbstractReinforceInvocationHandler {
         StringBuilder configKey = new StringBuilder(simpleName);
         String methodName = method.getName();
         configKey.append(methodName);
+        //获取方法级别 配置 start
         Class<?>[] parameterTypes = method.getParameterTypes();
         for (Class<?> c : parameterTypes){
             configKey.append(c.getSimpleName());
         }
         ReinforceOptions reinforceOptions = rpcConfig.get(configKey.toString());
         if (reinforceOptions != null){
-            return reinforceOptions;
+            if (reinforceOptions.isRetry()){
+                return reinforceOptions.options(isAllowedRetry(method));
+            }else {
+                return reinforceOptions.options();
+            }
         }
         String name = declaringClass.getName();
         configKey = new StringBuilder(name);
@@ -131,16 +120,45 @@ public abstract class AbstractReinforceInvocationHandler {
         }
         reinforceOptions = rpcConfig.get(configKey.toString());
         if (reinforceOptions != null){
-            return reinforceOptions;
+            if (reinforceOptions.isRetry()){
+                return reinforceOptions.options(isAllowedRetry(method));
+            }else {
+                return reinforceOptions.options();
+            }
         }
+        RpcInfo annotation = method.getAnnotation(RpcInfo.class);
+        if (annotation != null){
+            return ReinforceOptions.options(annotation);
+        }
+        //获取方法级别 end
+
+        //获取接口级别 start
         reinforceOptions = rpcConfig.get(simpleName);
         if (reinforceOptions != null){
-            return reinforceOptions;
+            if (reinforceOptions.isRetry()){
+                return reinforceOptions.options(isAllowedRetry(method));
+            }else {
+                return reinforceOptions.options();
+            }
         }
         reinforceOptions = rpcConfig.get(name);
         if (reinforceOptions != null){
-            return reinforceOptions;
+            if (reinforceOptions.isRetry()){
+                return reinforceOptions.options(isAllowedRetry(method));
+            }else {
+                return reinforceOptions.options();
+            }
         }
-        return defaultOptions;
+        annotation = declaringClass.getAnnotation(RpcInfo.class);
+        if (annotation != null){
+            return ReinforceOptions.options(annotation);
+        }
+        //获取接口级别 end
+
+        //获取全局
+        if (defaultOptions != null){
+            return defaultOptions.options();
+        }
+        return null;
     }
 }
