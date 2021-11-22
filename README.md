@@ -3,9 +3,10 @@
 本插件的作用在于 补全openfeign客户端在使用的默认代理和 Sentinel 代理
 的过程中无法自定义单个接口或者单个方法级别的超时时间与重试的插件
 
-本插件的优先级为 服务消费者method配置 > 服务消费者interface级配置 > 服务消费者全局配置 > 服务提供者
- 
- 服务提供方 maven 引用:
+##本插件的优先级为:
+服务消费者method配置 > 服务提供者method > 服务消费者interface级配置 > 服务提供者interface级配置 > 服务消费者全局配置
+
+#### 服务提供方 maven 引用:
  
                 <dependency>
                     <groupId>org.example</groupId>
@@ -13,7 +14,7 @@
                     <version>1.0-SNAPSHOT</version>
                 </dependency>
  
- java 代码书写方式(服务提供方使用注解形式):
+#### java 代码书写方式(服务提供方使用注解形式):
  
                 /**
                  * 注解放在 interface 上,则该 interface 下所有的方法 共享该配置
@@ -49,7 +50,7 @@
 
 
 
- 服务消费者方使用 application.yml 配置的形式使用,并且服务消费者超时时间配置优先级高于服务提供方配置
+#### 服务消费者方使用 application.yml 配置的形式使用,并且服务消费者超时时间配置优先级高于服务提供方配置
  
       feign:
         client:

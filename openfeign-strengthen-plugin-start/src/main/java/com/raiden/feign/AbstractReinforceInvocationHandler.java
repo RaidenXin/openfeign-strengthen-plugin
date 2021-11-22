@@ -155,7 +155,7 @@ public abstract class AbstractReinforceInvocationHandler {
         }
         //获取接口级别 end
 
-        //获取全局
+        //获取全局 说明没有获取到 服务提供者注解 默认不让重试
         if (defaultOptions != null){
             return defaultOptions.options();
         }
