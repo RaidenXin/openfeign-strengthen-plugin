@@ -106,6 +106,7 @@ public abstract class AbstractReinforceInvocationHandler {
         }
         ReinforceOptions reinforceOptions = rpcConfig.get(configKey.toString());
         if (reinforceOptions != null){
+            //判断是否需要重试 需要才去获取注解 是否允许重试以服务提供者注解标识为准
             if (reinforceOptions.isRetry()){
                 return reinforceOptions.options(isAllowedRetry(method));
             }else {
